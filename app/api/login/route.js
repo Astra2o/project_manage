@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 import Employee from "../../backend/models/Employee";
 import connectDB from "../../backend/models/db";
 
-export async function POST(req:any) {
+export async function POST(req) {
   try {
     await connectDB();
     const { email, password } = await req.json();
