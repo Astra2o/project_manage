@@ -8,7 +8,7 @@ const page = () => {
     <html>
         <body>
             
-        <div><LoginCompo/> </div>
+        <div> <LoginCompo/> </div>
 
         </body>
     </html>

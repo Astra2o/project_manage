@@ -1,10 +1,8 @@
-import { authenticate } from "@/backend/middleware/auth";
-import { havingPermission } from "@/backend/middleware/havingPermission";
-import connectDB from "@/backend/models/db";
-import projectModel from "@/backend/models/projectModel";
-import { JwtPayload } from "jsonwebtoken";
 
-
+import connectDB from "@/app/lib/db";
+import { authenticate } from "@/app/lib/middleware/auth";
+import { havingPermission } from "@/app/lib/middleware/havingPermission";
+import projectModel from "@/app/lib/models/projectModel";
 
 
 
@@ -18,8 +16,8 @@ export async function POST(req:any) {
        
         if (!token) return new Response(JSON.stringify({ message: "Unauthorized" }), { status: 401 });
 
-      const user = authenticate(token) as JwtPayload | undefined;
-      if (!user || !user.id) return new Response(JSON.stringify({ message: "Invalid token" }), { status: 403 });
+      const user = authenticate(token); // Extract user info from token
+         if (!user) return new Response(JSON.stringify({ message: "Invalid token" }), { status: 403 });
          
     // check having permission perform this action
 
@@ -47,8 +45,8 @@ export async function POST(req:any) {
               
 
     } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-        return new Response(JSON.stringify({ message: "Error creating project", error: errorMessage }), { status: 500 });
+        return new Response(JSON.stringify({ message: "Error creating project", error: error.message }), { status: 500 });
+
     }
     
 }

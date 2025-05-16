@@ -1,89 +1,64 @@
-import { authenticate } from '@/backend/middleware/auth';
-import { havingPermission } from '@/backend/middleware/havingPermission';
-import connectDB from '@/backend/models/db';
-import Employee from '@/backend/models/Employee';
 import bcrypt from 'bcrypt';
-import { NextRequest, NextResponse } from 'next/server';
-import { ApiResponse, JwtPayload } from '@/types/api';
-import { CreateEmployeeInput } from '@/types/models';
+import connectDB from "@/app/lib/db";
+import EmployeesModel from "@/app/lib/models/EmployeesModel";
+import { authenticate } from '@/app/lib/middleware/auth';
+import { havingPermission } from '@/app/lib/middleware/havingPermission';
+// import { verifyToken } from "@/app/lib/auth"; // Function to verify JWT
 
-interface AddEmployeeRequest extends CreateEmployeeInput {
-  password: string;
-}
-
-export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse>> {
+export async function POST(req: any) {
   try {
     await connectDB();
 
     // Verify JWT Token
+    
     const token = req.headers.get("authorization")?.split(" ")[1];
-    if (!token) {
-      return NextResponse.json(
-        { success: false, message: "Unauthorized", error: "Unauthorized" },
-        { status: 401 }
-      );
+    // console.log(token);
+    
+    
+    if (!token) return new Response(JSON.stringify({ message: "Unauthorized" }), { status: 401 });
+  //  console.log(token);
+
+
+   
+    const user = authenticate(token); // Extract user info from token
+    if (!user) return new Response(JSON.stringify({ message: "Invalid token" }), { status: 403 });
+    
+
+    const havingPermit = await havingPermission(user.id,{requiredRoles:["add_employees"]})
+    console.log(havingPermit.success);
+    if (!havingPermit.success) {
+              return new Response(JSON.stringify({ message: "Access denied" }), { status: 403 });
+
     }
 
-    const user = authenticate(token) as JwtPayload | undefined;
-    console.log(user);
-    
-    // if ( !user.id ||  !user.role) {
-    //   return NextResponse.json(
-    //     { success: false, message: "Invalid token", error: "Invalid token" },
-    //     { status: 403 }
-    //   );
+
+    // // Check if user has permission to add an employee
+    // const allowedRoles = ["manager", "hr", "admin"];
+    // if (!user.permissions.includes("employee_manage") && !allowedRoles.includes(user.role)) {
+    //   return new Response(JSON.stringify({ message: "Access denied" }), { status: 403 });
     // }
 
-    const havingPermit = await havingPermission(user.id, { requiredRoles: ["add_employees"] });
-    if (!havingPermit.success) {
-      return NextResponse.json(
-        { success: false, message: "Access denied", error: "Access denied" },
-        { status: 403 }
-      );
-    }
-
     // Extract request data
-    const { name, email, password, skills, role, position, permissions } = await req.json() as AddEmployeeRequest;
+    const { name, email, password, skills, role, position,permissions } = await req.json();
 
     // Check if the employee already exists
-    const existingUser = await Employee.findOne({ email });
-    if (existingUser) {
-      return NextResponse.json(
-        { success: false, message: "Employee already exists", error: "Employee already exists" },
-        { status: 400 }
-      );
-    }
+    const existingUser = await EmployeesModel.findOne({ email });
+    if (existingUser) return new Response(JSON.stringify({ message: "Employee already exists" }), { status: 400 });
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Generate Employee ID based on role
-    const count = await Employee.countDocuments({ role });
+    const count = await EmployeesModel.countDocuments({ role });
     const employeeId = `EK${role.toUpperCase().substring(0, 3)}${String(count + 1).padStart(2, "0")}`;
 
     // Create and save the new employee
-    const newEmployee = new Employee({
-      name,
-      email,
-      password: hashedPassword,
-      skills,
-      role,
-      position,
-      employeeId,
-      permissions
-    });
+    const newEmployee = new EmployeesModel({ name, email, password: hashedPassword, skills, role, position, employeeId,permissions });
     await newEmployee.save();
 
-    return NextResponse.json(
-      { success: true, message: "Employee registered successfully" },
-      { status: 201 }
-    );
-
+    return new Response(JSON.stringify({ message: "Employee registered successfully" }), { status: 201 });
+  
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-    return NextResponse.json(
-      { success: false, message: "Error registering employee", error: errorMessage },
-      { status: 500 }
-    );
+    return new Response(JSON.stringify({ message: "Error registering employee", error: error.message }), { status: 500 });
   }
 }

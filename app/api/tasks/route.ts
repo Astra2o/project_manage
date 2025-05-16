@@ -1,34 +1,23 @@
-import { authenticate } from "@/backend/middleware/auth";
-import { havingPermission } from "@/backend/middleware/havingPermission";
-import connectDB from "@/backend/models/db";
-import taskModel from "@/backend/models/taskModel";
-import { NextRequest, NextResponse } from 'next/server';
-import { ApiResponse, JwtPayload } from '@/types/api';
-import { ITask } from '@/types/models';
+import connectDB from "@/app/lib/db";
+import { authenticate } from "@/app/lib/middleware/auth";
+import { havingPermission } from "@/app/lib/middleware/havingPermission";
+import taskModel from "@/app/lib/models/taskModel";
 
-interface TaskResponse {
-  tasks: ITask[];
-}
 
-export async function GET(req: NextRequest): Promise<NextResponse<ApiResponse<TaskResponse>>> {
+
+export async function GET(req) {
     try {
         await connectDB();
 
         // Verify JWT Token
         const token = req.headers.get("authorization")?.split(" ")[1];
         if (!token) {
-            return NextResponse.json(
-                { success: false, message: "Unauthorized", error: "Unauthorized" },
-                { status: 401 }
-            );
+            return new Response(JSON.stringify({ message: "Unauthorized" }), { status: 401 });
         }
 
-        const user = authenticate(token) as JwtPayload | undefined;
-        if (!user || !user.id || !user.email || !user.role) {
-            return NextResponse.json(
-                { success: false, message: "Invalid token", error: "Invalid token" },
-                { status: 403 }
-            );
+        const user = authenticate(token); // Extract user info from token
+        if (!user) {
+            return new Response(JSON.stringify({ message: "Invalid token" }), { status: 403 });
         }
 
         // Check if user has permission (Only Team Leaders or Sr. Developers can view all tasks)
@@ -39,9 +28,9 @@ export async function GET(req: NextRequest): Promise<NextResponse<ApiResponse<Ta
         const assignedBy = searchParams.get("assignedBy");
         const assignedTo = searchParams.get("assignedTo");
         const projectId = searchParams.get("projectId");
-        const taskStatus = searchParams.get("taskStatus") as ITask['taskStatus'] | null;
+        const taskStatus = searchParams.get("taskStatus");
 
-        let filter: Record<string, any> = {};
+        let filter = {};
 
         if (hasPermission.success) {
             // If user has permission, allow all filters
@@ -53,20 +42,15 @@ export async function GET(req: NextRequest): Promise<NextResponse<ApiResponse<Ta
             // If user doesn't have permission, restrict to their assigned tasks
             filter.taskAssignedTo = user.id;
             if (projectId) filter.project = projectId;
+
         }
 
         // Fetch tasks based on the filters
         const tasks = await taskModel.find(filter);
 
-        return NextResponse.json(
-            { success: true, message: "Tasks fetched successfully", data: { tasks } },
-            { status: 200 }
-        );
+        return new Response(JSON.stringify({ tasks }), { status: 200 });
 
     } catch (error) {
-        return NextResponse.json(
-            { success: false, message: "Something went wrong while fetching tasks", error: (error as Error).message },
-            { status: 500 }
-        );
+        return new Response(JSON.stringify({ message: "Something went wrong while fetching tasks", error: error.message }), { status: 500 });
     }
 }

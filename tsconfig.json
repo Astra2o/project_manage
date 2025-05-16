@@ -28,7 +28,7 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx"
-  ],
+, "app/store/slices/sidebarSlice.js"  ],
   "exclude": [
     "node_modules"
   ]

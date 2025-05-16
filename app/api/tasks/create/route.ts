@@ -1,10 +1,8 @@
-import { authenticate } from "@/backend/middleware/auth";
-import { havingPermission } from "@/backend/middleware/havingPermission";
-import connectDB from "@/backend/models/db";
-import projectModel from "@/backend/models/projectModel";
-import taskModel from "@/backend/models/taskModel";
-import { JwtPayload } from "jsonwebtoken";
-
+import connectDB from "@/app/lib/db";
+import { authenticate } from "@/app/lib/middleware/auth";
+import { havingPermission } from "@/app/lib/middleware/havingPermission";
+import projectModel from "@/app/lib/models/projectModel";
+import taskModel from "@/app/lib/models/taskModel";
 
 export async function POST(req:any) {
     
@@ -21,8 +19,8 @@ export async function POST(req:any) {
         
         if (!token) return new Response(JSON.stringify({ message: "Unauthorized" }), { status: 401 });
       //  console.log(token);
-     const user = authenticate(token) as JwtPayload | undefined;
-     if (!user || !user.id || !user.email || !user.role) return new Response(JSON.stringify({ message: "Invalid token" }), { status: 403 });
+     const user = authenticate(token); // Extract user info from token
+     if (!user) return new Response(JSON.stringify({ message: "Invalid token" }), { status: 403 });
         
 
          const havingPermit = await havingPermission(user.id,{requiredRoles:["team_leader","sr_developer"]})

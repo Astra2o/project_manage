@@ -1,6 +1,9 @@
-"use client"
+'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { useRouter } from 'next/navigation'
+import { loginUser } from '../../../store/slices/authSlice'
 
 const LoginCompo = () => {
   const [formData, setFormData] = useState({
@@ -8,7 +11,28 @@ const LoginCompo = () => {
     password: ''
   })
   const [errors, setErrors] = useState({})
-  const [loginError, setLoginError] = useState('')
+
+  const dispatch = useDispatch();
+  const { loading, error, user } = useSelector((state) => state.auth);
+  const router = useRouter()
+
+  useEffect(() => {
+    if (user) {
+      switch (user.role) {
+        case 'admin':
+          router.push('/admin')
+          break
+        case 'developer':
+          router.push('/developer')
+          break
+        case 'manager':
+          router.push('/manager')
+          break
+        default:
+          router.push('/')
+      }
+    }
+  }, [user, router])
 
   const validateForm = () => {
     const newErrors = {}
@@ -19,25 +43,22 @@ const LoginCompo = () => {
     }
     if (!formData.password) {
       newErrors.password = 'Password is required'
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters'
     }
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    setLoginError('')
-    
+
     if (validateForm()) {
-      // Check credentials
-      if (formData.email === 'admin@admin.com' && formData.password === 'pass123') {
-        // Successful login
-        console.log('Login successful')
-        // Add your navigation or state management logic here
-      } else {
-        setLoginError('Invalid credentials')
+      try {
+        const resultAction = await dispatch(loginUser(formData))
+        if (loginUser.fulfilled.match(resultAction)) {
+          // redirection handled by useEffect
+        }
+      } catch (error) {
+        console.error('Login error:', error)
       }
     }
   }
@@ -100,18 +121,19 @@ const LoginCompo = () => {
             </div>
           </div>
 
-          {loginError && (
+          {error && (
             <div className="text-center text-sm text-red-600">
-              {loginError}
+              {error}
             </div>
           )}
 
           <div>
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              disabled={loading}
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
             >
-              Sign in
+              {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </div>
         </form>
