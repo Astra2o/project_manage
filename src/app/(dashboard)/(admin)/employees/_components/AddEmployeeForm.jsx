@@ -81,6 +81,7 @@ const skillOptions = [
 
 
   return (
+    
   <div className="w-full border mt-10 mx-auto p-6 bg-white rounded-2xl shadow">
     <h2 className="text-2xl font-bold mb-4">Add Employee</h2>
     <form onSubmit={handleSubmit} className="space-y-4">
