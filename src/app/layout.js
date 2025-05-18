@@ -20,10 +20,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className="w-[100vw] h-[100vh]"
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          {children}https://github.com/Astra2o/project_manage/tree/master/app/backend
+          {children}
         </ThemeProvider>
       </body>
     </html>
