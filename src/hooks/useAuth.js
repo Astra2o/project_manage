@@ -1,3 +1,4 @@
+import { api } from '@/lib/api';
 import axios from 'axios';
 import { create } from 'zustand';
 
@@ -5,29 +6,45 @@ const useAuthStore = create((set) => ({
   user: null,
   token: null,
 
-  initializeAuth: () => {
-    const token = localStorage.getItem('token');
-    const user = JSON.parse(localStorage.getItem('user'));
+ initializeAuth: () => {
+  const token = localStorage.getItem('token');
 
-    if (token && user) {
-      set({ token, user });
+  const getUser = async () => {
+    try {
+      const res = await api.get("/get_user");
+      if (res.data.success) {
+        const { user } = res.data;
+        set({ token, user });
+      }
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      // Optional: clear token on error if needed
+      localStorage.removeItem('token');
+      set({ token: null, user: null });
     }
-  },
+  };
+
+  if (token) {
+    set({ token });
+    getUser();
+  }
+},
+
 
   login: (token, user) => {
     localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
+    // localStorage.setItem('user', JSON.stringify(user));
     set({ token, user });
   },
 
   loginWithAPI: async (email, password) => {
     try {
       const res = await axios.post('/api/login', { email, password });
-
-      if (res.data.success) {
+      //  console.log(res.status);
+       
+      if (res.status==200) {
         const { token, user } = res.data;
         localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
         set({ token, user });
         return { success: true };
       } else {
@@ -41,7 +58,6 @@ const useAuthStore = create((set) => ({
 
   logout: () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('user');
     set({ token: null, user: null });
   },
 }));

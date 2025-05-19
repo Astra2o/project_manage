@@ -120,7 +120,7 @@ console.log(data);
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <div className="rounded-md bg-zinc-100   overflow-hidden border">
+      <div className="rounded-md  overflow-hidden border">
         <Table >
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

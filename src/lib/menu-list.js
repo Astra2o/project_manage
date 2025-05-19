@@ -104,7 +104,7 @@ const menuGroups = [
         href: "",
         label: "Posts",
         icon: SquarePen,
-        roles: ["admin", "editor"],
+        roles: [ "editor"],
         submenus: [
           {
             href: "/posts",
@@ -120,30 +120,38 @@ const menuGroups = [
         href: "/categories",
         label: "Categories",
         icon: Bookmark,
-        roles: ["admin", "editor"]
+        roles: [ "editor"]
       },
       {
         href: "/tags",
         label: "Tags",
         icon: Tag,
-        roles: ["admin"]
+        roles: ["editor"]
       }
     ]
   },
+
+  //admin menu
   {
     groupLabel: "Employees",
     menus: [
+        {
+        href: "/employees/new",
+        label: "Add New Employee",
+        icon: UserPlus ,      
+        roles: ["admin", "editor", "viewer"]
+      },
       {
         href: "/employees",
         label: "All Employees",
         icon: Users,
         roles: ["admin","viewer"]
-      },
+      },    
       {
-        href: "/employees/new",
-        label: "Add New Employee",
-        icon: UserPlus ,      
-        roles: ["admin", "editor", "viewer"]
+        href: "/teams",
+        label: "All Teams",
+        icon: Users ,      
+        roles: ["admin",]
       }
     ]
   },
