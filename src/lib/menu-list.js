@@ -139,17 +139,23 @@ const menuGroups = [
         href: "/employees/new",
         label: "Add New Employee",
         icon: UserPlus ,      
-        roles: ["admin", "editor", "viewer"]
+        roles: ["admin", "editor"]
       },
       {
         href: "/employees",
         label: "All Employees",
         icon: Users,
-        roles: ["admin","viewer"]
+        roles: ["admin"]
       },    
       {
         href: "/teams",
         label: "All Teams",
+        icon: Users ,      
+        roles: ["admin",]
+      },
+      {
+        href: "/teams/new",
+        label: "New Team",
         icon: Users ,      
         roles: ["admin",]
       }

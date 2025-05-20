@@ -2,8 +2,8 @@
 // import { DataTable } from "./data-table"
 "use client"
 import ProtectedRoute from "@/app/_components/ProcectedRoute";
-import { columns } from "./_components/EmployeeTabel/columns"
-import { DataTable } from "./_components/EmployeeTabel/data-tabel"
+import { columns } from "./_components/TeamsTabel/columns"
+import { DataTable } from "./_components/TeamsTabel/data-tabel"
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 
@@ -30,13 +30,13 @@ export default  function DemoPage() {
 
   const fetchEmployeeStats = async () => {
   try {
-    const res = await api.get("/employees");  // no need to pass headers, token auto-added via interceptor
+    const res = await api.get("/teams/get");  // no need to pass headers, token auto-added via interceptor
 
     if (res.data) {
-      // console.log("Employee Stats:", res.data.employees);
+      console.log("Employee Stats:", res.data.teams);
       // You can set this in state too, if needed
       // setEmployees(res.data.employees);
-      return res.data.employees
+      return res.data.teams
     }
   } catch (error) {
     console.error("Error fetching employees:", error.response?.data?.message || error.message);

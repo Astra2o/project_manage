@@ -35,6 +35,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import AddTeamPopover from "../AddTeamPopOver";
 
 export function DataTable({ columns, data }) {
   const [sorting, setSorting] = useState([]);
@@ -83,7 +84,7 @@ console.log(data);
 
   return (
     <>
-      <div className="flex  px-10  items-center py-4">
+      <div className="flex justify-between px-10  items-center py-4">
         <Input
           placeholder="Filter emails..."
           value={table.getColumn("name")?.getFilterValue() ?? ""}
@@ -92,6 +93,8 @@ console.log(data);
           }
           className="max-w-sm"
         />
+
+       <div className="flex gap-4">
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -119,6 +122,12 @@ console.log(data);
               })}
           </DropdownMenuContent>
         </DropdownMenu>
+        {/* <Button variant="outline" className="ml-auto">
+              Add Team
+            </Button> */}
+            <AddTeamPopover />
+
+       </div>
       </div>
       <div className="rounded-md  overflow-hidden border">
         <Table >
