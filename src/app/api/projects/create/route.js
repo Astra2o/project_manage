@@ -32,13 +32,13 @@ export async function POST(req) {
 
         console.log(" -----------------------");
         const body = await req.json(); // Convert the request body to JSON
-        const { projectName, clientName, clientEmail, developers } = body;
+        const { projectName, teamManger, priority, deadLine,projectDescription } = body;
 
         const existingProject = await projectModel.findOne({ projectName });
             if (existingProject) return new Response(JSON.stringify({ message: "Project already exists" }), { status: 400 });
         
               // Create and save the new employee
-                const newproject = new projectModel({ projectName,clientName,clientEmail,developers });
+                const newproject = new projectModel({ projectName,teamManger,priority,deadLine,projectDescription });
                 await newproject.save();
             
                 return new Response(JSON.stringify({ message: "project created successfully",newproject }), { status: 201 });

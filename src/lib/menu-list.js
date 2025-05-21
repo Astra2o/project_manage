@@ -79,7 +79,9 @@ import {
   SquarePen,
   LayoutGrid,
   UserRoundCheck,
-  UserPlus
+  UserPlus,
+  FolderPlus,
+  FolderGit2
 } from "lucide-react";
 
 
@@ -159,6 +161,24 @@ const menuGroups = [
         icon: Users ,      
         roles: ["admin",]
       }
+    ]
+  },
+  {
+    groupLabel: "Projects",
+    menus: [
+        {
+        href: "/projects/new",
+        label: "Add New Project",
+        icon: FolderPlus ,      
+        roles: ["admin", "editor"]
+      },
+      {
+        href: "/projects",
+        label: "All Projects",
+        icon: FolderGit2,
+        roles: ["admin"]
+      },    
+     
     ]
   },
   {
