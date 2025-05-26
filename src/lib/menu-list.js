@@ -176,8 +176,40 @@ const menuGroups = [
         href: "/projects",
         label: "All Projects",
         icon: FolderGit2,
-        roles: ["admin"]
+        roles: ["admin","manager"]
       },    
+     
+    ]
+  },
+  {
+    groupLabel: "Tasks",
+    menus: [
+        {
+        href: "/tasks/create",
+        label: "Add New Task",
+        icon: FolderPlus ,      
+        roles: ["admin", "manager"]
+      },
+      {
+        href: "/tasks/mytasks",
+        label: "My Task",
+        icon: FolderGit2,
+        roles: ["developer","manager","uiux","seo"]
+      },    
+     
+    ]
+  },
+ 
+  {
+    groupLabel: "My Team",
+    menus: [
+        {
+        href: "/teams/all",
+        label: "My Team",
+        icon: FolderPlus ,      
+        roles: [ "manager"]
+      },
+       
      
     ]
   },
@@ -201,16 +233,30 @@ const menuGroups = [
 ];
 
 // Function to get menus based on user role
+// export function getMenuList(pathname) {
+//   const { user } = useAuthStore.getState(); // zustand se current user
+
+//   const role = user?.role || "viewer"; // default viewer agar kuch na ho
+
+//   // Role ke hisaab se menus filter
+//   const filteredMenus = menuGroups.map((group) => ({
+//     groupLabel: group.groupLabel,
+//     menus: group.menus.filter((menu) => menu.roles.includes(role))
+//   })).filter((group) => group.menus.length > 0); // Empty group hata dega
+
+//   return filteredMenus;
+// }
 export function getMenuList(pathname) {
-  const { user } = useAuthStore.getState(); // zustand se current user
+  const user = useAuthStore((state) => state.user); // this auto-updates on state change
 
-  const role = user?.role || "viewer"; // default viewer agar kuch na ho
+  const role = user?.role || "viewer";
 
-  // Role ke hisaab se menus filter
-  const filteredMenus = menuGroups.map((group) => ({
-    groupLabel: group.groupLabel,
-    menus: group.menus.filter((menu) => menu.roles.includes(role))
-  })).filter((group) => group.menus.length > 0); // Empty group hata dega
+  const filteredMenus = menuGroups
+    .map((group) => ({
+      groupLabel: group.groupLabel,
+      menus: group.menus.filter((menu) => menu.roles.includes(role)),
+    }))
+    .filter((group) => group.menus.length > 0);
 
   return filteredMenus;
 }

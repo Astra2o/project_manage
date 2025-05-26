@@ -1,5 +1,5 @@
 import axios from "axios";
-import { redirect, useRouter } from "next/navigation"; // next 13+ app router ka navigation
+// import { redirect, useRouter } from "next/navigation"; // next 13+ app router ka navigation
 
 export const api = axios.create({
   baseURL: "/api", // apni API base URL daal lena

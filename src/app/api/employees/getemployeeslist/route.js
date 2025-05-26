@@ -21,7 +21,7 @@ export async function GET(req) {
     }
 
     const hasPermission = await havingPermission(user.id, {
-      requiredRoles: ["team_leader", "sr_developer"],
+      requiredRoles: ["team_leader", "sr_developer","manager"],
     });
 
     if (!hasPermission) {

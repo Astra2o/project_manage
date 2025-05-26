@@ -13,6 +13,16 @@ import {
 } from "@/components/ui/hover-card"; // adjust path if needed
 import { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
+// Custom date formatting function
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = date.toLocaleString('default', { month: 'short' });
+  const year = date.getFullYear();
+  return `${day} ${month} ${year}`;
+};
+
 export const columns = [
   {
     id: "select",
@@ -35,8 +45,18 @@ export const columns = [
   },
   {
     accessorKey: "projectName",
-    header: "Project Name",
-    id:"name",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Project Name
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      )
+    },
+        id:"name",
     cell: ({ row }) => (
       <div className="font-semibold">{row.original.projectName}</div>
     ),
@@ -48,34 +68,59 @@ export const columns = [
     cell: ({ row }) => (
       <Badge variant="secondary" className="capitalize">{row.original.status}</Badge>
     ),
+    filterFn: (row, id, value) => {
+      return value === "" || row.getValue(id) === value;
+    },
   },
   {
     accessorKey: "priority",
-    header: "Priority",
-    cell: ({ row }) => (
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Priority
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      )
+    },    cell: ({ row }) => (
       <div>{row.original.priority}</div>
     ),
+    filterFn: (row, id, value) => {
+      return value === "" || row.getValue(id) === value;
+    },
   },
  
   {
     accessorKey: "startDate",
     header: "Start Date",
     cell: ({ row }) => (
-      <div>{new Date(row.original.startDate).toLocaleDateString()}</div>
+      <div>{formatDate(row.original.startDate)}</div>
     ),
+    filterFn: (row, id, value) => {
+      if (!value) return true;
+      const rowDate = new Date(row.getValue(id));
+      return rowDate >= value;
+    },
   },
   {
     accessorKey: "deadLine",
     header: "Deadline",
     cell: ({ row }) => (
-      <div>{new Date(row.original.deadLine).toLocaleDateString()}</div>
+      <div>{formatDate(row.original.deadLine)}</div>
     ),
+    filterFn: (row, id, value) => {
+      if (!value) return true;
+      const rowDate = new Date(row.getValue(id));
+      return rowDate <= value;
+    },
   },
   {
-    accessorKey: "teamManger.name",
+    accessorKey: "teamManger .name",
     header: "Team Manager",
     cell: ({ row }) => (
-      <div>{row.original.teamManger.name}</div>
+      <div>{row.original.teamManager.name}</div>
     ),
   },
   // {

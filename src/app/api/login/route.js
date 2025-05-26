@@ -20,7 +20,7 @@ export async function POST(req) {
     const isMatch = await bcrypt.compare(password, employee.password);
     if (!isMatch) return new Response(JSON.stringify({ message: "Invalid credentials" }), { status: 401 });
 
-    const token = jwt.sign({ id: employee._id, role: employee.role }, process.env.JWT_SECRET, { expiresIn: "1d" });
+    const token = jwt.sign({ id: employee._id, role: employee.role,name:employee.name }, process.env.JWT_SECRET, { expiresIn: "1d" });
     console.log("tokan");
     
       

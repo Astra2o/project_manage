@@ -52,7 +52,7 @@ const handleSubmit = async () => {
 
   const payload = {
     projectName,
-    teamManger: managedBy,        // assuming managedBy is leader id
+    teamManger : managedBy,        // assuming managedBy is leader id
     statdate: "", // today date
     deadLine,
     priority:"low",

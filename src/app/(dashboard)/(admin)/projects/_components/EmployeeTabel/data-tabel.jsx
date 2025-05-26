@@ -35,6 +35,15 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { format } from "date-fns";
+import { CalendarIcon, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export function DataTable({ columns, data }) {
   const [sorting, setSorting] = useState([]);
@@ -42,56 +51,192 @@ export function DataTable({ columns, data }) {
   const [columnVisibility, setColumnVisibility] = useState({status: false, });
   const [rowSelection, setRowSelection] = useState({});
   const [selectedIds, setSelectedIds] = useState([]);
-//   const [pageSize, setPageSize] = useState(10);
+  const [priorityFilter, setPriorityFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
 
-
-// console.log(data);
-
+  const clearFilters = () => {
+    setPriorityFilter("all");
+    setStatusFilter("all");
+    setStartDate(null);
+    setEndDate(null);
+    setColumnFilters([]);
+  };
 
   const table = useReactTable({
     data,
     columns,
     initialState: {
       columnVisibility: {
-        status: false,  // false = hidden, true = visible
+        status: false,
       }
     },
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(), //for pagination
-    onSortingChange: setSorting, //for sorting
-    getSortedRowModel: getSortedRowModel(), //for sorting
-    onColumnFiltersChange: setColumnFilters, //for filters
-    getFilteredRowModel: getFilteredRowModel(), //for filters
-    onColumnVisibilityChange: setColumnVisibility, //for colomn visiblity selection
-    onRowSelectionChange: setRowSelection, // for row selection
-
+    getPaginationRowModel: getPaginationRowModel(),
+    onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
+    onColumnFiltersChange: setColumnFilters,
+    getFilteredRowModel: getFilteredRowModel(),
+    onColumnVisibilityChange: setColumnVisibility,
+    onRowSelectionChange: setRowSelection,
     state: {
-      sorting, //for sorting
-      columnFilters, // for filters
+      sorting,
+      columnFilters,
       columnVisibility,
       rowSelection,
-     
-    //   pagination: {
-    //     pageSize: pageSize,
-    //     pageIndex: 0, // optional if you want to control page number too
-    //   },
     },
   });
 
+  // Apply filters
+  useEffect(() => {
+    const filters = [];
+    
+    if (priorityFilter && priorityFilter !== 'all') {
+      filters.push({
+        id: "priority",
+        value: priorityFilter
+      });
+    }
+    
+    if (statusFilter && statusFilter !== 'all') {
+      filters.push({
+        id: "status",
+        value: statusFilter
+      });
+    }
+    
+    if (startDate) {
+      filters.push({
+        id: "startDate",
+        value: startDate
+      });
+    }
+    
+    if (endDate) {
+      filters.push({
+        id: "deadLine",
+        value: endDate
+      });
+    }
+    
+    setColumnFilters(filters);
+  }, [priorityFilter, statusFilter, startDate, endDate]);
 
-   useEffect(() => {
-      const selectedRows = table.getFilteredSelectedRowModel().rows;
-      const ids = selectedRows.map(row => row.original._id);
-      setSelectedIds(ids);
-      console.log("Selected IDs:", ids);
-   }, [rowSelection])
-     
+  useEffect(() => {
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+    const ids = selectedRows.map(row => row.original._id);
+    setSelectedIds(ids);
+    console.log("Selected IDs:", ids);
+  }, [rowSelection])
 
   return (
     <>
-      <div className="flex  px-10  items-center py-4">
+      <div className="space-y-4 p-4 border rounded-lg mb-4">
+        <div className="flex flex-wrap gap-4 items-center">
+          {/* Priority Filter */}
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium">Priority</label>
+            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select Priority" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="critical">Critical</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Status Filter */}
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium">Status</label>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="onhold">On Hold</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Start Date Filter */}
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium">Start Date</label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-[180px] justify-start text-left font-normal",
+                    !startDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {startDate ? format(startDate, "PPP") : "Pick a date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={startDate}
+                  onSelect={setStartDate}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* End Date Filter */}
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium">End Date</label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-[180px] justify-start text-left font-normal",
+                    !endDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {endDate ? format(endDate, "PPP") : "Pick a date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={endDate}
+                  onSelect={setEndDate}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* Clear Filters Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-6"
+            onClick={clearFilters}
+          >
+            <X className="mr-2 h-4 w-4" />
+            Clear Filters
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex items-center py-4">
         <Input
-          placeholder="Filter emails..."
+          placeholder="Filter by name..."
           value={table.getColumn("name")?.getFilterValue() ?? ""}
           onChange={(event) =>
             table.getColumn("name")?.setFilterValue(event.target.value)
@@ -176,115 +321,6 @@ export function DataTable({ columns, data }) {
           </TableBody>
         </Table>
       </div>
-
-      {/* pagination buttons */}
-
-    {/* <div className="flex items-center gap-3">
-  <span className="text-sm text-muted-foreground">Rows per page:</span>
-  <Select value={String(pageSize)} onValueChange={(value) => setPageSize(Number(value))}>
-    <SelectTrigger className="w-[80px]">
-      <SelectValue placeholder="Select" />
-    </SelectTrigger>
-    <SelectContent>
-      {[10, 20, 50, 100].map((size) => (
-        <SelectItem key={size} value={String(size)}>
-          {size}
-        </SelectItem>
-      ))}
-    </SelectContent>
-  </Select>
-</div> */}
-<div className="flex items-center justify-between gap-4 py-4 flex-wrap">
-  {/* Rows per page */}
-  {/* <div className="flex items-center gap-3">
-    <span className="text-sm text-muted-foreground">Rows per page:</span>
-    <Select value={String(pageSize)} onValueChange={(value) => setPageSize(Number(value))}>
-      <SelectTrigger className="w-[80px]">
-        <SelectValue placeholder="Select" />
-      </SelectTrigger>
-      <SelectContent>
-        {[10, 20, 50, 100].map((size) => (
-          <SelectItem key={size} value={String(size)}>
-            {size}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  </div> */}
-
-  {/* Pagination */}
-  {/* <div className="flex items-center gap-2 flex-wrap">
-    <Button
-      variant="outline"
-      size="icon"
-      onClick={() => table.previousPage()}
-      disabled={!table.getCanPreviousPage()}
-    >
-      &lt;
-    </Button>
-
-    {table.getPageCount() > 0 && (
-      <>
-        {table.getState().pagination.pageIndex > 2 && (
-          <>
-            <Button
-              variant={table.getState().pagination.pageIndex === 0 ? "default" : "outline"}
-              size="icon"
-              onClick={() => table.setPageIndex(0)}
-            >
-              1
-            </Button>
-            {table.getState().pagination.pageIndextable.getState().pagination.pageIndex > 3 && <span className="px-1 text-sm">...</span>}
-          </>
-        )}
-
-        {Array.from({ length: table.getPageCount() })
-          .map((_, index) => index)
-          .filter(
-            (page) =>
-              page === table.getState().pagination.pageIndex - 1 ||
-              page === table.getState().pagination.pageIndex ||
-              page === table.getState().pagination.pageIndex + 1
-          )
-          .map((page) => (
-            <Button
-              key={page}
-              variant={table.getState().pagination.pageIndex === page ? "default" : "outline"}
-              size="icon"
-              onClick={() => table.setPageIndex(page)}
-            >
-              {page + 1}
-            </Button>
-          ))}
-
-        {table.getState().pagination.pageIndex < table.getPageCount() - 3 && (
-          <>
-            {table.getState().pagination.pageIndex < table.getPageCount() - 4 && (
-              <span className="px-1 text-sm">...</span>
-            )}
-            <Button
-              variant={table.getState().pagination.pageIndex === table.getPageCount() - 1 ? "default" : "outline"}
-              size="icon"
-              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-            >
-              {table.getPageCount()}
-            </Button>
-          </>
-        )}
-      </>
-    )}
-
-    <Button
-      variant="outline"
-      size="icon"
-      onClick={() => table.nextPage()}
-      disabled={!table.getCanNextPage()}
-    >
-      &gt;
-    </Button>
-  </div> */}
-</div>
-
 
       <div className="flex items-center justify-end space-x-2 py-4">
         <Button

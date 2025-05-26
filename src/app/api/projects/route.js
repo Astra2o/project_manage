@@ -38,18 +38,35 @@ export async function GET(req) {
     // Query params
     const { searchParams } = new URL(req.url);
     const projectName = searchParams.get("projectName");
+    const collabParam = searchParams.get("collab");
 
     let filter = {};
 
     if (hasPermission.success) {
       if (projectName) filter.projectName = { $regex: projectName, $options: "i" };
     } else {
-      filter.developers = user.id;
+      // ❌ Permission nahi hai toh by default apne hi assigned projects dekh sakta hai
+      filter.$or = [
+        { teamManager: user.id },
+        { developers: user.id }
+      ];
+
+      // ✅ Agar collab param bhi hai toh usme bhi check kare
+      if (collabParam === "true") {
+        filter.$or.push({ collaborators: user.id });
+      }
+
+      // ✅ Agar projectName param bhi diya hai toh uska bhi check lagao
+      if (projectName) {
+        filter.projectName = { $regex: projectName, $options: "i" };
+      }
+    
+      
     }
 
     // Fetch projects with required fields and populate
     const projects = await projectModel.find(filter)
-      .populate("teamManger", "_id name")
+      .populate("teamManager", "_id name")
       .populate("developers", "_id name")
       .lean();
 
@@ -88,7 +105,8 @@ export async function GET(req) {
     const projectData = projects.map(project => {
       const taskCounts = statsMap[project._id.toString()] || {};
       const totalTasks = Object.values(taskCounts).reduce((a, b) => a + b, 0);
-
+      console.log(project.teamManager);
+      
       return {
         projectName: project.projectName,
         _id: project._id,
@@ -97,7 +115,7 @@ export async function GET(req) {
         startDate: project.startDate,
         deadLine: project.deadLine,
         projectDescription: project.projectDescription,
-        teamManger: project.teamManger,
+        teamManager : project.teamManager ,
         developers: project.developers,
         tasks: {
           totalTasks,

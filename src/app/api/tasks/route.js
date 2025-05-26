@@ -19,7 +19,7 @@ export async function GET(req) {
         }
 
         // Check if user has permission (Only Team Leaders or Sr. Developers can view all tasks)
-        const hasPermission = await havingPermission(user.id, { requiredRoles: ["team_leader", "sr_developer"] });
+        const hasPermission = await havingPermission(user.id, { requiredRoles: ["developer", "seo","uiux","cto","manager"] });
 
         // Extract query parameters
         const { searchParams } = new URL(req.url);
@@ -27,26 +27,80 @@ export async function GET(req) {
         const assignedTo = searchParams.get("assignedTo");
         const projectId = searchParams.get("projectId");
         const taskStatus = searchParams.get("taskStatus");
+        const page = parseInt(searchParams.get("page")) || 1;
+        const limit = parseInt(searchParams.get("limit")) || 10;
+        const skip = (page - 1) * limit;
 
-        let filter = {};
+        // let filter = {};
+        let filter = { taskAssignedTo: user.id };  // 👈 ye fix kardo
+
 
         if (hasPermission.success) {
             // If user has permission, allow all filters
             if (assignedBy) filter.taskAssignedBy = assignedBy;
             if (assignedTo) filter.taskAssignedTo = assignedTo;
-            if (projectId) filter.project = projectId;
-            if (taskStatus) filter.taskStatus = taskStatus;
+            if (projectId) {
+                // Handle multiple project IDs
+                const projectIds = projectId.split(',');
+                filter.project = projectIds.length > 1 ? { $in: projectIds } : projectIds[0];
+            }
+            if (taskStatus) {
+                // Handle multiple task statuses
+                const statuses = taskStatus.split(',');
+                filter.taskStatus = statuses.length > 1 ? { $in: statuses } : statuses[0];
+            }
         } else {
             // If user doesn't have permission, restrict to their assigned tasks
             filter.taskAssignedTo = user.id;
-            if (projectId) filter.project = projectId;
-
+            if (projectId) {
+                // Handle multiple project IDs
+                const projectIds = projectId.split(',');
+                filter.project = projectIds.length > 1 ? { $in: projectIds } : projectIds[0];
+            }
         }
 
-        // Fetch tasks based on the filters
-        const tasks = await taskModel.find(filter);
+        // Create a complex filter for tasks
+        const taskFilter = {
+            $or: [
+                // Non-collaborative projects
+                { iscollaborator: false },
+                // Collaborative projects with accepted status
+                {
+                    iscollaborator: true,
+                    collabrationstatus: "accept"
+                }
+            ],
+            ...filter
+        };
 
-        return new Response(JSON.stringify({ tasks }), { status: 200 });
+        // Get total tasks count with the new filter
+        const totalTasks = await taskModel.countDocuments(taskFilter);
+
+        // Get total accepted collaborative projects count
+        const acceptedCollaborativeProjects = await taskModel.distinct('project', {
+            ...filter,
+            iscollaborator: true,
+            collabrationstatus: "accept"
+        });
+
+        // Fetch tasks based on the filters with pagination
+        const tasks = await taskModel.find(taskFilter)
+            .skip(skip)
+            .limit(limit)
+            .sort({ taskCreatedAt: -1 })
+            .populate('project', 'projectName')
+            .populate('taskAssignedTo', 'name email')
+            .populate('taskAssignedBy', 'name email');
+
+        return new Response(JSON.stringify({
+            tasks,
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil(totalTasks / limit),
+                totalTasks,
+                totalAcceptedCollaborativeProjects: acceptedCollaborativeProjects.length
+            }
+        }), { status: 200 });
 
     } catch (error) {
         return new Response(JSON.stringify({ message: "Something went wrong while fetching tasks", error: error.message }), { status: 500 });

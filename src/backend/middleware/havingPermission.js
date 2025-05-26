@@ -22,7 +22,7 @@ export const havingPermission = async (
     const hasRole =
       requiredRoles.includes(user.role) ||
       requiredRoles.includes(user.position) ||
-      ["admin", "manager", "hr"].includes(user.role);
+      ["admin", "hr"].includes(user.role);
 
     return hasPermission || hasRole
       ? { success: true }
