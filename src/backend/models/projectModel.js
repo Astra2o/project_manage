@@ -33,7 +33,7 @@ const projectSchema = new mongoose.Schema(
       enum: ["onhold", "active", "completed"],
       default: "active",
     },
-    active: { type: Boolean, default: true },
+    completionDate: { type: Date },
     priority: {
       type: String,
       enum: ["low", "medium", "high", "critical"],

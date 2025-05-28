@@ -45,8 +45,8 @@ export async function GET(req, { params }) {
             { taskAssignedTo: user.id }, // manager ko assigned
             { taskAssignedBy: user.id }, // manager ne assign kiya
             {
-              isCollaboration: true,
-              collaborationStatus: "accepted",
+              iscollaborator: true,
+              collabrationstatus: "accept",
               taskAssignedTo: { $in: teamMemberIds }, // team members ko collaboration wale accepted task
             },
           ],

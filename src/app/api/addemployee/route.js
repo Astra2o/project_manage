@@ -50,14 +50,14 @@ export async function POST(req) {
     if (existingUser) return new Response(JSON.stringify({ message: "Employee already exists" }), { status: 400 });
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Generate Employee ID based on role
-    const count = await Employee.countDocuments({ role });
-    const employeeId = `EK${role.toUpperCase().substring(0, 3)}${String(count + 1).padStart(2, "0")}`;
+    // // Generate Employee ID based on role
+    // const count = await Employee.countDocuments({ role });
+    // const employeeId = `EK${role.toUpperCase().substring(0, 3)}${String(count + 1).padStart(2, "0")}`;
 
     // Create and save the new employee
-    const newEmployee = new Employee({ name, email, password: hashedPassword, skills, role, position, employeeId,permissions });
+    const newEmployee = new Employee({ name, email, password, skills, role, position,permissions });
     await newEmployee.save();
 
     return new Response(JSON.stringify({ message: "Employee registered successfully" }), { status: 201 });

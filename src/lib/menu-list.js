@@ -196,6 +196,18 @@ const menuGroups = [
         icon: FolderGit2,
         roles: ["developer","manager","uiux","seo"]
       },    
+      {
+        href: "/tasks/requests",
+        label: "Collab Requests",
+        icon: FolderGit2,
+        roles: ["manager"]
+      },    
+      {
+        href: "/tasks/teamtasks",
+        label: "Team Tasks",
+        icon: FolderGit2,
+        roles: ["manager"]
+      },    
      
     ]
   },

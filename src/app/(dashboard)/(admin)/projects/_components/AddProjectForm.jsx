@@ -52,12 +52,12 @@ const handleSubmit = async () => {
 
   const payload = {
     projectName,
-    teamManger : managedBy,        // assuming managedBy is leader id
+    teamManager : managedBy,        // assuming managedBy is leader id
     statdate: "", // today date
     deadLine,
     priority:"low",
     projectdescription
-  };
+  };      
 
   try {
     console.log("Submitting Payload:", payload);
@@ -66,13 +66,13 @@ const handleSubmit = async () => {
 
     const response = await api.post("/projects/create", payload );
 
-    if (response.status === 201) {
+    if (response.status == 201) {
 
 
-      toast("Team created successfully!");
-      setTeamName("");
+      toast("Project created successfully!");
+      setProjectName("");
       setManagedBy("");
-      setSelectedMembers([]);
+      // setSelectedMembers([]);
 
       onSuccess && onSuccess();
     } else {
@@ -117,7 +117,7 @@ const handleSubmit = async () => {
             >
               {managedBy
                 ? employeeList.find((emp) => emp.value === managedBy)?.label
-                : "Select Manager"}
+                : <span className="text-[#737373] font-normal">Select Manager</span>}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-[300px] p-0">

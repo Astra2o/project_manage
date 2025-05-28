@@ -9,7 +9,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 // Custom date formatting function
 const formatDate = (dateString) => {
@@ -18,6 +26,32 @@ const formatDate = (dateString) => {
   const month = date.toLocaleString('default', { month: 'short' });
   const year = date.getFullYear();
   return `${day} ${month} ${year}`;
+};
+
+const updateTaskStatus = async (taskId, newStatus, onSuccess) => {
+  try {
+    const response = await fetch(`/api/tasks/${taskId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify({ taskStatus: newStatus })
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      toast.success(data.message);
+      onSuccess(newStatus);
+      return true;
+    } else {
+      toast.error(data.message || 'Failed to update status');
+      return false;
+    }
+  } catch (error) {
+    toast.error('Error updating task status');
+    return false;
+  }
 };
 
 export const columns = [
@@ -51,16 +85,22 @@ export const columns = [
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
-    cell: ({ row }) => (
-      <div className="font-semibold flex items-center gap-2">
-        {row.original.iscollaborator && (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-yellow-400/50 border border-yellow-300">
-            <GitMerge className="w-3 h-3" />
-          </span>
-        )}
-        {row.original.taskName}
-      </div>
-    ),
+    cell: ({ row }) => {
+      const router = useRouter();
+      return (
+        <div 
+          className="font-semibold flex items-center gap-2 cursor-pointer hover:text-primary"
+          onClick={() => router.push(`/tasks/${row.original._id}`)}
+        >
+          {row.original.iscollaborator && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-yellow-400/50 border border-yellow-300">
+              <GitMerge className="w-3 h-3" />
+            </span>
+          )}
+          {row.original.taskName}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "project.projectName",
@@ -80,18 +120,21 @@ export const columns = [
   {
     accessorKey: "taskStatus",
     header: "Status",
-    cell: ({ row }) => (
-      <Badge 
-        variant={
-          row.original.taskStatus === "completed" ? "success" :
-          row.original.taskStatus === "in_progress" ? "warning" :
-          "secondary"
-        }
-        className="capitalize"
-      >
-        {row.original.taskStatus.replace("_", " ")}
-      </Badge>
-    ),
+    cell: ({ row }) => {
+      const status = row.original.taskStatus;
+      return (
+        <Badge 
+          variant={
+            status === "completed" ? "success" :
+            status === "in_progress" ? "warning" :
+            "secondary"
+          }
+          className="capitalize"
+        >
+          {status.replace("_", " ")}
+        </Badge>
+      );
+    },
   },
   {
     accessorKey: "startDate",
@@ -128,12 +171,25 @@ export const columns = [
   },
   {
     id: "actions",
-    cell: ({ row }) => {
+    cell: ({ row, table }) => {
       const task = row.original;
+      const router = useRouter();
 
       const copyTaskId = () => {
         navigator.clipboard.writeText(task._id);
         toast.success("Task ID copied to clipboard");
+      };
+
+      const handleStatusChange = async (newStatus) => {
+        const success = await updateTaskStatus(task._id, newStatus, (updatedStatus) => {
+          const updatedData = table.options.data.map((item) => {
+            if (item._id === task._id) {
+              return { ...item, taskStatus: updatedStatus };
+            }
+            return item;
+          });
+          table.options.meta?.updateData(updatedData);
+        });
       };
 
       return (
@@ -156,17 +212,50 @@ export const columns = [
               <Button
                 variant="ghost"
                 className="justify-start gap-2"
+                onClick={() => router.push(`/tasks/${task._id}`)}
               >
                 <Eye className="h-4 w-4" />
                 View Task
               </Button>
-              <Button
-                variant="ghost"
-                className="justify-start gap-2"
-              >
-                <CheckCircle2 className="h-4 w-4" />
-                Update Status
-              </Button>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="justify-start gap-2"
+                  >
+                    <CheckCircle2 className="h-4 w-4" />
+                    Update Status
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-48 p-2" side="right" align="start">
+                  <div className="flex flex-col gap-1">
+                    <Button
+                      variant="ghost"
+                      className="justify-start"
+                      disabled={task.taskStatus === "pending"}
+                      onClick={() => handleStatusChange("pending")}
+                    >
+                      Pending
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="justify-start"
+                      disabled={task.taskStatus === "in_progress"}
+                      onClick={() => handleStatusChange("in_progress")}
+                    >
+                      In Progress
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="justify-start"
+                      disabled={task.taskStatus === "completed"}
+                      onClick={() => handleStatusChange("completed")}
+                    >
+                      Completed
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
               <Button
                 variant="ghost"
                 className="justify-start gap-2"

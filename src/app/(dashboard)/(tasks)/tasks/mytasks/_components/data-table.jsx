@@ -91,6 +91,10 @@ export function DataTable({ columns = [] }) {
     fetchData();
   }, [currentPage, pageSize, filters]);
 
+  const updateData = (newData) => {
+    setData(newData);
+  };
+
   const table = useReactTable({
     data,
     columns,
@@ -107,6 +111,9 @@ export function DataTable({ columns = [] }) {
       columnFilters,
       columnVisibility,
       rowSelection,
+    },
+    meta: {
+      updateData,
     },
   });
 

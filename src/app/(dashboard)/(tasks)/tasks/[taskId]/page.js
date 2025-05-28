@@ -66,7 +66,9 @@ export default function TaskDetailPage() {
 
   const handleUpdateTask = async () => {
     try {
-      const res = await api.put(`/tasks/${taskId}`, editedTask);
+      // console.log(editedTask);
+     const  {deadline,taskDescription}= editedTask;
+      const res = await api.patch(`/tasks/${taskId}`,  {deadline,taskDescription});
       setTask(res.data.task);
       setIsEditing(false);
       toast.success("Task updated successfully");

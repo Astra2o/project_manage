@@ -40,6 +40,10 @@ export async function GET(req) {
     const projectName = searchParams.get("projectName");
     const collabParam = searchParams.get("collab");
 
+
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
     let filter = {};
 
     if (hasPermission.success) {
@@ -64,10 +68,29 @@ export async function GET(req) {
       
     }
 
+
+// ✅ Add date check for completed projects
+filter.$and = [
+  {
+    $or: [
+      { status: { $ne: "completed" } }, // not completed
+      {
+        $and: [
+          { status: "completed" },
+          { completionDate: { $gte: sevenDaysAgo } }
+        ]
+      }
+    ]
+  }
+];
+
+
+
     // Fetch projects with required fields and populate
     const projects = await projectModel.find(filter)
       .populate("teamManager", "_id name")
       .populate("developers", "_id name")
+      .sort({ createdAt: -1 })
       .lean();
 
     // If no projects found

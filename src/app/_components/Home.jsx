@@ -1,3 +1,5 @@
+"use client"
+
 import Link from "next/link";
 import Image from "next/image";
 import { PanelsTopLeft } from "lucide-react";
@@ -5,9 +7,34 @@ import { ArrowRightIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
 
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/ui/mode-toggle";
+import { useEffect } from "react";
+// import { messaging } from "@/lib/firebase";
+// import { getToken } from "firebase/messaging";
 // import { ModeToggle } from "./components/ui/mode-toggle";
 
 export default function Home() {
+
+
+  // useEffect(() => {
+  //   async function reqPermission() {
+  //     try {
+  //       const permission = await Notification.requestPermission();
+  //       if (permission === "granted") {
+  //         const fcmToken = await getToken(messaging, {
+  //           vapidKey: "BHNguRAeLTkqwa9LbZzoc3TsHC3JmGFdpIINgybm4zWqY3w_bXRnmCy_zvxoI3TImZzUe4DErPGtP-aSkBvlij0",
+  //         });
+  //         console.log("Your FCM Token:", fcmToken);
+  //       } else {
+  //         console.log("You denied notification permission");
+  //       }
+  //     } catch (error) {
+  //       console.error("Error getting permission or token:", error);
+  //     }
+  //   }
+  
+  //   reqPermission();
+  // }, []);
+  
   return (
     <div className="flex flex-col min-h-screen">
       <header className="z-[50] sticky top-0 w-full bg-background/95 border-b backdrop-blur-sm dark:bg-black/[0.6] border-border/40">

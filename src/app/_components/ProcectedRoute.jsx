@@ -16,7 +16,7 @@ const ProtectedRoute = ({ allowedRoles, children }) => {
       if (token) {
         useAuthStore.getState().initializeAuth();
       } else {
-        router.push('/dashboard');
+        router.push('/login');
       }
     } else if (!allowedRoles.includes(user.role)) {
       router.push('/dashboard');

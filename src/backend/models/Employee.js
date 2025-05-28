@@ -7,7 +7,7 @@ const employeeSchema = new mongoose.Schema({
   skills: { type: [String], required: true },
   role: { type: String, required: true, enum: ["admin","digital marketing", "developer", "uiux", "seo", "cto","manager"] },
   position: { type: String, required: true }, // Example: Sr. Developer, Intern
-  employeeId: { type: String, unique: true },
+  employeeId: { type: String,unique:false},
   permissions: { type: [String], default: [] },
 });
 

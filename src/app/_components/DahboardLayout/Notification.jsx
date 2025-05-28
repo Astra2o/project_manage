@@ -1,9 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LayoutGrid, LogOut, User } from "lucide-react";
-import { useRouter } from "next/navigation";
-import useAuthStore from "@/hooks/useAuth";
+import { Bell, LayoutGrid, LogOut, User } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -23,15 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function UserNav() {
-  const router = useRouter();
-  const { user, logout } = useAuthStore();
-
-  const handleSignOut = () => {
-    logout();
-    router.push('/login');
-  };
-
+export function Notification() {
   return (
     <DropdownMenu>
       <TooltipProvider disableHoverableContent>
@@ -40,27 +30,29 @@ export function UserNav() {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                className="relative h-8 w-8 rounded-full"
+                className="relative h-8 w-8 mr-2 rounded-full"
               >
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src="#" alt="Avatar" />
-                  <AvatarFallback className="bg-transparent">
-                    {user?.name?.charAt(0) || 'U'}
-                  </AvatarFallback>
+                <Avatar className="h-8 flex justify-between items-center relative">
+                  {/* Bell Icon */}
+                  <Bell className="mx-auto" />
+                  {/* Notification badge */}
                 </Avatar>
+                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full transform translate-x-1/2 -translate-y-1/2">
+                  99+
+                </span>
               </Button>
             </DropdownMenuTrigger>
           </TooltipTrigger>
-          <TooltipContent side="bottom">Profile</TooltipContent>
+          <TooltipContent side="bottom">Notification</TooltipContent>
         </Tooltip>
       </TooltipProvider>
 
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user?.name || 'User'}</p>
+            <p className="text-sm font-medium leading-none">John Doe</p>
             <p className="text-xs leading-none text-muted-foreground">
-              {user?.email || 'user@example.com'}
+              johndoe@example.com
             </p>
           </div>
         </DropdownMenuLabel>
@@ -80,7 +72,7 @@ export function UserNav() {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="hover:cursor-pointer" onClick={handleSignOut}>
+        <DropdownMenuItem className="hover:cursor-pointer" onClick={() => {}}>
           <LogOut className="w-4 h-4 mr-3 text-muted-foreground" />
           Sign out
         </DropdownMenuItem>
